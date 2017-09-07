@@ -52,18 +52,19 @@ phi[1:-1, 1:-1] = 0.0
 
 # Calculate the force source
 f = -5. * np.exp(X) * np.exp(-2. * Y)
+res = np.empty(0, dtype=np.float64)
 begin_time = time.time()
 if type_smoother == 1:
     for i in range(ntmax):
         phi_0 = phi.copy()
         smoother_Jacobi(phi, phi_0, f, h)
-        res = np.linalg.norm(phi - phi_0)
-        print("Iteration " + str(i) + "Res = " + str(res))
-        if res <= 1.e-5:
+        res = np.append(res, np.linalg.norm(phi - phi_0))
+        print("Iteration " + str(i) + "Res = " + str(res[-1]))
+        if res[-1] <= 1.e-5:
             print("Converge")
             break
 elif type_smoother == 2:
-    for i in range(10000):
+    for i in range(ntmax):
         phi_0 = phi.copy()
         smoother_GS(phi, f, n_nodes)
         res = np.linalg.norm(phi - phi_0)
@@ -72,7 +73,7 @@ elif type_smoother == 2:
             print("Converge")
             break
 elif type_smoother == 3:
-    for i in range(10000):
+    for i in range(ntmax):
         phi_0 = phi.copy()
         smoother_SOR(phi, f, n_nodes)
         res = np.linalg.norm(phi - phi_0)
@@ -83,10 +84,18 @@ elif type_smoother == 3:
 
 end_time = time.time()
 print("Time taken: " + str(end_time - begin_time))
-np.savetxt("Serial.txt", phi)
 # Plot
-plt.figure
+plt.figure(1)
 CS = plt.contour(X, Y, phi)
 plt.clabel(CS, inline=1, fontsize=10)
 plt.title('Pressure')
-plt.show()
+plt.savefig("Phi.png")
+
+# Plot the residual
+t = np.linspace(0, res.size - 1, res.size, dtype=np.int)
+plt.figure(2)
+plt.plot(t, res)
+plt.yscale('log')
+plt.xlabel("Iteration")
+plt.ylabel(r"$L^2$Residual")
+plt.savefig("Residual.png")

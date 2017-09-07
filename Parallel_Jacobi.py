@@ -27,6 +27,7 @@ y = np.linspace(rank * local_length, (rank + 1.) *
                 local_length, local_size, dtype=np.float64)
 X, Y = np.meshgrid(x, y)
 local_phi = np.zeros((local_size + 2, n_nodes), dtype=np.float64)
+
 # left and right boundary
 local_phi[1:-1, 0] = np.exp(X[:, 0]) * np.exp(-2. * Y[:, 0])
 local_phi[1:-1, -1] = np.exp(X[:, -1]) * np.exp(-2 * Y[:, -1])
@@ -37,11 +38,12 @@ if rank == 0:
 if rank == size - 1:
     local_phi[-2, :] = np.exp(X[-1, :]) * np.exp(-2. * Y[-1, :])
 
-# Fource source setting
+# Force source setting
 local_f = np.zeros((local_size + 2, n_nodes), dtype=np.float64)
 local_f[1:-1, :] = -5. * np.exp(X) * np.exp(-2. * Y)
 
-res = np.empty(1, dtype=np.float64)
+res = np.empty(0, dtype=np.float64)
+res_t = np.empty(1, dtype=np.float64)
 # Decide the domain
 begin_row = 0
 end_row = local_size + 2
@@ -50,8 +52,6 @@ if rank == 0:
 if rank == size - 1:
     end_row = local_size + 1
 
-#print("After initialization" + "Procs " + str(rank))
-# print(local_phi)
 begin_time = time.time()
 for nt in range(ntmax):
     # Receive data from blocks below
@@ -66,9 +66,6 @@ for nt in range(ntmax):
     # Receive data from blocks above
     if rank > 0:
         comm.Recv([local_phi[0, :], MPI.DOUBLE], source=rank - 1, tag=2)
-#    print("Iteration " + str(nt) + " Procs " +
-#          str(rank) + "After communication")
-#    print(local_phi)
     local_phi0 = local_phi.copy()
     smoother_Jacobi(local_phi[begin_row:end_row, :],
                     local_phi0[begin_row:end_row, :], local_f[begin_row:end_row, :], h)
