@@ -86,10 +86,10 @@ end_time = time.time()
 print("Time taken: " + str(end_time - begin_time))
 # Plot
 plt.figure(1)
-CS = plt.contour(X, Y, phi)
-plt.clabel(CS, inline=1, fontsize=10)
-plt.title('Pressure')
-plt.savefig("Phi.png")
+surf = plt.contourf(X, Y, phi)
+plt.colorbar(surf)
+plt.title(r'$\phi$')
+plt.savefig("Serial.png")
 
 # Plot the residual
 t = np.linspace(0, res.size - 1, res.size, dtype=np.int)
