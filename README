@@ -1,1 +1,18 @@
-This is a Parallel Poisson Solver
+Parallel Poisson Solver
+The code solves -a*laplacian(phi) = f with a 2D square domain [0,1]*[0,1] with forcing fun-
+ction f = -5*exp(x)*exp(-2.y). At the boundary phi = exp(x)*exp*(-2.y) and it is also an
+analytical solution.
+Serial version contains 3 method: 1.Jacobi, 2.Gauss Seidel, 3.SOR for solving the linear
+system and theyall work well.To run Serial.py, 3 command line key words are needed (n for
+number of vertexs each side).
+python Serial.py n method max_iterations
+
+Parallel version only uses the Jacobi method and I have tested it for n = 33,65,129,257
+and number of processes P = 4,8,16. There is something wrong for combinations (p = 4 n =
+257) and (p = 8 n = 257). However, combination p = 16 and n = 257 works and accelerates
+the computation well. It only takes about 25 s while serial versions spends nearly 3
+minutes.You can run the script like this:
+mpirun -np P python Parallel.py n mat_iterations
+
+The parallel GS,SOR and multigrid methods will be added later to accelerate the computation
+and reduce the iterations.
